@@ -1,0 +1,49 @@
+# Node.js dependencies
+node_modules/
+/build/
+/.parcel-cache/
+/.next/
+/dist/
+
+# Environment variables
+.env
+.env.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Python dependencies
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+.env/
+
+# Virtual environment
+/venv/
+/.venv/
+
+# Python-specific files
+*.swp
+*.swo
+
+# IDE and editor settings
+.vscode/
+.idea/
+*.iml
+.DS_Store
+Thumbs.db
+
+# Coverage and testing
+/coverage/
+/junitxml/
+*.cover
+*.coverage
+
+# OS-specific files
+*.log
+*.out
+*.bak
