@@ -3,7 +3,6 @@ import { AuthProvider, useAuth } from './contexts/AuthContext/index'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { Sidebar } from './components/Sidebar/index'
 import { LoginScreen } from './pages/login'
-import { RegisterScreen } from './pages/login/register'
 import { HomeScreen } from './pages/home'
 import { PatientsScreen } from './pages/patients'
 import { PatientScreen } from './pages/patients/editPatient'
@@ -21,7 +20,6 @@ export const App = () => {
         <Routes>
           <Route path="/" element={<LoginScreen />} />
           <Route path="*" element={<Navigate to="/" />} />
-          <Route path="/register" element={<RegisterScreen />} />
           <Route
             path="/home"
             element={
