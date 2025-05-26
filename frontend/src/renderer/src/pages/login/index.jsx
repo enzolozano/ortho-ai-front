@@ -4,12 +4,14 @@ import { useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import { Eye, EyeOff } from 'lucide-react'
+import backgroundImage from '../../assets/background.jpg'
 
 export const LoginScreen = () => {
   const { login } = useAuth()
   const navigate = useNavigate()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const [role, setRole] = useState('')
   const [error, setError] = useState('')
   const [showPassword, setShowPassword] = useState(false)
 
@@ -31,12 +33,26 @@ export const LoginScreen = () => {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-200 p-4">
+    <div
+      className="flex flex-col items-center justify-center min-h-screen bg-cover bg-center p-4"
+      style={{ backgroundImage: `url(${backgroundImage})` }}
+    >
       <div className="bg-white p-6 rounded-2xl shadow-md w-full max-w-md">
         <Title text="Login" />
         <SubTitle text="Entre com suas credenciais para acessar sua conta" />
         {error && <p className="text-red-500 text-center mb-4">{error}</p>}
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <select
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+            className="border p-2 rounded-lg w-full"
+            required
+          >
+            <option value="">Selecione o tipo de usuário</option>
+            <option value="patient">Paciente</option>
+            <option value="doctor">Médico</option>
+            <option value="admin">Administrador</option>
+          </select>
           <input
             type="text"
             placeholder="Digite seu usuário"
@@ -70,16 +86,7 @@ export const LoginScreen = () => {
             color="blue"
           >
             Enviar
-          </button>
-          <div className="text-center text-sm">
-            Não tem uma conta?{' '}
-            <label
-              onClick={() => navigate('/register')}
-              className="font-medium text-blue-600 underline underline-offset-4 cursor-pointer"
-            >
-              Cadastre-se
-            </label>
-          </div>
+          </button>          
         </form>
       </div>
     </div>
