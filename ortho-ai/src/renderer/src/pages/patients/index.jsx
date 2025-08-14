@@ -1,18 +1,13 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Title } from '../../components/Title'
 import { SubTitle } from '../../components/SubTitle'
 import { useNavigate } from 'react-router-dom'
 import { Modal, Form, Button } from 'react-bootstrap'
-import { ToastWarning, ToastSuccess } from '../../components/Toast'
+import { ToastError, ToastWarning, ToastSuccess } from '../../components/Toast'
+import { GetPatients, RemovePatientById } from '../../services/users'
 
 export const PatientsScreen = () => {
-  const [patients, setPatients] = useState([
-    { id: 1, name: 'Ana Silva', age: 45, condition: 'Grau elevado' },
-    { id: 2, name: 'Carlos Mendes', age: 62, condition: 'Grau elevado' },
-    { id: 3, name: 'Mariana Costa', age: 38, condition: 'Grau leve' },
-    { id: 4, name: 'João Ferreira', age: 55, condition: 'Sem curvatura' },
-    { id: 5, name: 'Lúcia Santos', age: 42, condition: 'Sem curvatura' }
-  ])
+  const [patients, setPatients] = useState([])
 
   const [name, setName] = useState('')
   const [age, setAge] = useState(0)
@@ -26,57 +21,71 @@ export const PatientsScreen = () => {
 
   const navigate = useNavigate()
 
-  const handleCloseAddPatient = () => setShowAddPatient(false)
-  const handleShowAddPatient = () => setShowAddPatient(true)
-
   const handleCloseRemovePatient = () => setShowRemovePatient(false)
   const handleShowRemovePatient = (id) => {
     setRemoveId(id)
     setShowRemovePatient(true)
   }
+
+  useEffect(() => {
+    async function fetchPatients() {
+      try {
+        const response = await GetPatients()
+
+        if (response.message) {
+          return ToastError(response.message)
+        }
+
+        const mappedPatients = response.patients.map(user => {
+          const age = user.birth_date
+            ? Math.floor(
+                (new Date() - new Date(user.birth_date)) /
+                  (365.25 * 24 * 60 * 60 * 1000)
+              )
+            : null
+
+          return {
+            id: user.id,
+            name: user.name,
+            age: age || 0,
+            email: user.email,
+            phone: user.phone,
+          }
+        })
+
+        setPatients(mappedPatients)
+      } catch (error) {
+        console.error("Erro ao buscar pacientes:", error)
+      }
+    }
+
+    fetchPatients();
+  }, []);
   
   const filteredPatients = useMemo(() => {
     let result = patients.filter(
       (patient) =>
         patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         patient.age.toString().includes(searchTerm) ||
-        patient.condition.toLowerCase().includes(searchTerm.toLowerCase()),
+        patient.phone.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        patient.email.toLowerCase().includes(searchTerm.toLowerCase()),
     )
   
     return result
   }, [patients, searchTerm])
 
-  const removePatient = () => {
+  const removePatient = async () => {
+    const response = await RemovePatientById(removeId)
+
+    if (response.message) {
+      return ToastError(response.message)
+    }
+
     setPatients((prevPatients) => prevPatients.filter((patient) => patient.id !== removeId))
     ToastSuccess('Paciente removido com sucesso!')
 
     setRemoveId(0)
     handleCloseRemovePatient()
-  }
-
-  const addPatient = () => {
-    if (!name) {
-      ToastWarning('Preencha o campo de nome!')
-      return
-    }
-
-    if (!age) {
-      ToastWarning('Preencha o campo de idade!')
-      return
-    }
-
-    const newPatient = {
-      id: patients.length > 0 ? patients[patients.length - 1].id + 1 : 1,
-      name: name,
-      age: parseInt(age, 10),
-      condition: 'Não avaliado'
-    }
-
-    setPatients([...patients, newPatient])
-    setName('')
-    setAge(0)
-
-    handleCloseAddPatient()
   }
 
   return (
@@ -112,7 +121,12 @@ export const PatientsScreen = () => {
               </th>
               <th className="p-3 text-left font-medium text-gray-600">
                 <div className="flex items-center gap-1">
-                  Condição
+                  Telefone
+                </div>
+              </th>
+              <th className="p-3 text-left font-medium text-gray-600">
+                <div className="flex items-center gap-1">
+                  Email
                 </div>
               </th>
               <th className="p-3 text-left font-medium text-gray-600"></th>
@@ -123,7 +137,8 @@ export const PatientsScreen = () => {
               <tr key={patient.id} className="hover:bg-gray-50">
                 <td className="text-gray-800 flex-1 p-3">{patient.name}</td>
                 <td className="text-gray-800 flex-1 p-3">{patient.age}</td>
-                <td className="text-gray-800 flex-1 p-3">{patient.condition}</td>
+                <td className="text-gray-800 flex-1 p-3">{patient.phone}</td>
+                <td className="text-gray-800 flex-1 p-3">{patient.email}</td>
                 <td className="p-3 flex gap-2">
                   <button
                     type="button"
@@ -156,7 +171,7 @@ export const PatientsScreen = () => {
       <button
         type="button"
         className="bg-blue-500 text-white font-medium py-3 px-5 rounded-lg"
-        onClick={handleShowAddPatient}
+        onClick={() => navigate('/patient/-1')}
       >
         + Adicionar Paciente
       </button>
@@ -174,43 +189,6 @@ export const PatientsScreen = () => {
           </Button>
           <Button variant="success" onClick={removePatient}>
             Sim
-          </Button>
-        </Modal.Footer>
-      </Modal>
-
-      <Modal centered show={showAddPatient} onHide={handleCloseAddPatient}>
-        <Modal.Header closeButton>
-          <Modal.Title>Adicionar paciente</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form>
-            <Form.Group className="mb-3">
-              <Form.Label className="font-semibold">Nome</Form.Label>
-              <Form.Control
-                type="text"
-                placeholder="Digite o nome do paciente"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label className="font-semibold">Idade</Form.Label>
-              <Form.Control
-                type="number"
-                min="0"
-                placeholder="Digite a idade do paciente"
-                value={age}
-                onChange={(e) => setAge(e.target.value)}
-              />
-            </Form.Group>
-          </Form>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleCloseAddPatient}>
-            Fechar
-          </Button>
-          <Button variant="primary" onClick={addPatient}>
-            Salvar
           </Button>
         </Modal.Footer>
       </Modal>
