@@ -1,5 +1,6 @@
 import { Title } from '../../components/Title'
 import { SubTitle } from '../../components/SubTitle'
+import { Footer } from '../../components/Footer'
 import { useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
@@ -86,7 +87,8 @@ export const LoginScreen = () => {
             color="blue"
           >
             Enviar
-          </button>          
+          </button>
+          <Footer text={`© ${new Date().getFullYear()} - Todos os direitos reservados`} />
         </form>
       </div>
     </div>

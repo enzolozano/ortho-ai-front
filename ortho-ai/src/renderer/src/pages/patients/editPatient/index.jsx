@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ToastWarning, ToastSuccess } from '../../../components/Toast'
+import { ToastWarning, ToastSuccess, ToastError } from '../../../components/Toast'
 import { ArrowLeft, Upload, X } from "lucide-react"
+import { GetPatientById, PostPatient, PutPatient } from '../../../services/users'
 
 export const PatientScreen = () => {
   const [preview, setPreview] = useState(null)
   const [patient, setPatient] = useState({
     name: "",
     email: "",
+    phone: "",
     birthDate: "",
     registerDate: "",
     photo: null,
@@ -15,19 +17,31 @@ export const PatientScreen = () => {
   const { id } = useParams()
   const navigate = useNavigate()
   
-  // Simulação de carregamento de tela enquanto não tem integração com banco de dados
   useEffect(() => {
-    // TODO: Aplicar chamada de API aqui
-    const patient = {
-      id: id,
-      name: `Patient ${id}`,
-      email: `patient${id}@gmail.com`,
-      birthDate: `1980-0${id}-15`,
-      registerDate: `2025-04-25`,
-      photo: null
-    }
+    async function searchPatient() {
+      const response = await GetPatientById(id)  
 
-    setPatient(patient)    
+      if (response.message) {
+        return ToastError(response.message);
+      }
+
+      const patient = {
+        id: id,
+        name: response.patient.name,
+        email: response.patient.email,
+        phone: response.patient.phone,
+        birthDate: response.patient.birth_date,
+        registerDate: response.patient.created_at,
+        photo: response.patient.photo_url
+      }
+
+      setPreview(patient.photo)
+      setPatient(patient)
+    }
+    
+    if (id > 0) {
+      searchPatient()
+    }
   }, [id])
 
   const handleInputChange = (e) => {
@@ -39,21 +53,23 @@ export const PatientScreen = () => {
   }
 
   const handleFileChange = (e) => {
-    const selectedFile = e.target.files?.[0] || null
+    const selectedFile = e.target.files?.[0] || null;
 
     if (selectedFile) {
-      setPatient({
-        ...patient,
-        photo: selectedFile
-      })
-
-      const reader = new FileReader()
+      const reader = new FileReader();
       reader.onloadend = () => {
-        setPreview(reader.result)
-      }
-      reader.readAsDataURL(selectedFile)
+        const base64String = reader.result;
+        
+        setPatient({
+          ...patient,
+          photo: base64String
+        });
+
+        setPreview(base64String);
+      };
+      reader.readAsDataURL(selectedFile);
     }
-  }
+  };
 
   const clearFile = () => {
     setPatient({
@@ -63,12 +79,31 @@ export const PatientScreen = () => {
     setPreview(null)
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
 
-    // TODO: Adicionar lógica de edição do paciente
-    ToastSuccess('Dados do paciente atualizado com sucesso!')
-    navigate('/patients')
+    const newPatient = {
+      name: patient.name,
+      email: patient.email,
+      phone: patient.phone,
+      birth_date: patient.birthDate,
+      role: 0,
+      photo_url: patient.photo
+    }
+
+    console.log(patient)
+    console.log(newPatient)
+
+    const response = id > 0 ? await PutPatient(id, newPatient) : await PostPatient(newPatient)
+
+    console.log(response)
+
+    if (!response.success) {
+        return ToastError(response.message)
+    } else {
+      ToastSuccess(response.message)
+      navigate('/patients')
+    }
   }
 
   return (
@@ -144,6 +179,23 @@ export const PatientScreen = () => {
                 required
               />
             </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+                Telefone
+              </label>
+              <input
+                type="phone"
+                id="phone"
+                name="phone"
+                value={patient.phone}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                required
+              />
+            </div>
 
             <div className="space-y-2">
               <label htmlFor="birthDate" className="block text-sm font-medium text-gray-700">
@@ -168,7 +220,7 @@ export const PatientScreen = () => {
                 type="date"
                 id="registerDate"
                 name="registerDate"
-                value={patient.registerDate}
+                value={patient.registerDate.split("T")[0]}
                 className="w-full px-4 py-2 border rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
                 disabled
               />
