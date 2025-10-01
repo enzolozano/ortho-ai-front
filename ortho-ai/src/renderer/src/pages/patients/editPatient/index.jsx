@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ToastWarning, ToastSuccess, ToastError } from '../../../components/Toast'
+import { ToastSuccess, ToastError } from '../../../components/Toast'
 import { ArrowLeft, Upload, X } from "lucide-react"
-import { GetPatientById, PostPatient, PutPatient } from '../../../services/users'
+import { GetUserById, PostUser, PutUser } from '../../../services/users'
 
 export const PatientScreen = () => {
   const [preview, setPreview] = useState(null)
@@ -19,7 +19,7 @@ export const PatientScreen = () => {
   
   useEffect(() => {
     async function searchPatient() {
-      const response = await GetPatientById(id)  
+      const response = await GetUserById(id)  
 
       if (response.message) {
         return ToastError(response.message);
@@ -27,12 +27,12 @@ export const PatientScreen = () => {
 
       const patient = {
         id: id,
-        name: response.patient.name,
-        email: response.patient.email,
-        phone: response.patient.phone,
-        birthDate: response.patient.birth_date,
-        registerDate: response.patient.created_at,
-        photo: response.patient.photo_url
+        name: response.name,
+        email: response.email,
+        phone: response.phone,
+        birthDate: response.birth_date,
+        registerDate: response.created_at,
+        photo: response.photo_url
       }
 
       setPreview(patient.photo)
@@ -94,7 +94,7 @@ export const PatientScreen = () => {
     console.log(patient)
     console.log(newPatient)
 
-    const response = id > 0 ? await PutPatient(id, newPatient) : await PostPatient(newPatient)
+    const response = id > 0 ? await PutUser(id, newPatient) : await PostUser(newPatient)
 
     console.log(response)
 
