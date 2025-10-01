@@ -1,16 +1,27 @@
-import { FaHome, FaUsers, FaFileUpload, FaRegClock } from 'react-icons/fa'
-import { FaGear } from 'react-icons/fa6'
+import { FaHome, FaUsers, FaFileUpload } from 'react-icons/fa'
+import { FaUserDoctor } from "react-icons/fa6";
 import { FiFileText } from 'react-icons/fi'
+import { useAuth } from '../../contexts/AuthContext'
+import logo from '../../assets/logo.png'
 
 export const Sidebar = ({ navigate, logout }) => {
+  const { user } = useAuth()
+
   const menuItems = [
     { id: 'home', title: 'Tela Inicial', icon: <FaHome /> },
     { id: 'patients', title: 'Pacientes', icon: <FaUsers /> },
     { id: 'uploadfile', title: 'Enviar Imagem', icon: <FaFileUpload /> },
-    { id: 'history', title: 'Histórico de Leituras', icon: <FaRegClock /> },
     { id: 'reports', title: 'Relatórios', icon: <FiFileText /> },
-    { id: 'settings', title: 'Configurações', icon: <FaGear /> }
   ]
+
+  if (user?.role === 2) {
+    const patientsIndex = menuItems.findIndex(item => item.id === 'patients')
+    menuItems.splice(patientsIndex + 1, 0, {
+      id: 'doctors',
+      title: 'Médicos',
+      icon: <FaUserDoctor />
+    })
+  }
 
   const handleLogout = () => {
     logout()
@@ -20,7 +31,7 @@ export const Sidebar = ({ navigate, logout }) => {
   return (
     <div className="w-64 bg-white border-r border-gray-200 h-screen flex flex-col">
       <div className="p-5 border-b border-gray-200">
-        <span className="text-2xl font-bold text-gray-800">OrthoAI</span>
+        <img src={logo} alt="OrthoAI" />
       </div>
       <div className="mt-5 flex flex-col">
         {menuItems.map((item) => {

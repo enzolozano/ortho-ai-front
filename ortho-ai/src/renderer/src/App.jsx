@@ -6,10 +6,10 @@ import { LoginScreen } from './pages/login'
 import { HomeScreen } from './pages/home'
 import { PatientsScreen } from './pages/patients'
 import { PatientScreen } from './pages/patients/editPatient'
+import { DoctorsScreen } from './pages/doctors'
+import { DoctorScreen } from './pages/doctors/editDoctor'
 import { SendImageScreen } from './pages/sendImage'
-import { HistoryScreen } from './pages/history'
 import { ReportsScreen } from './pages/reports'
-import { SettingScreen } from './pages/settings'
 import { ToastContainer } from 'react-toastify'
 
 export const App = () => {
@@ -51,6 +51,26 @@ export const App = () => {
             }
           />
           <Route
+            path="/doctors"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <DoctorsScreen />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/doctor/:id"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <DoctorScreen />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/uploadfile"
             element={
               <ProtectedRoute>
@@ -61,31 +81,11 @@ export const App = () => {
             }
           />
           <Route
-            path="/history"
-            element={
-              <ProtectedRoute>
-                <Layout>
-                  <HistoryScreen />
-                </Layout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
             path="/reports"
             element={
               <ProtectedRoute>
                 <Layout>
                   <ReportsScreen />
-                </Layout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/settings"
-            element={
-              <ProtectedRoute>
-                <Layout>
-                  <SettingScreen />
                 </Layout>
               </ProtectedRoute>
             }
