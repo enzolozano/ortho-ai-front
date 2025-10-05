@@ -12,7 +12,6 @@ export const LoginScreen = () => {
   const navigate = useNavigate()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [role, setRole] = useState('')
   const [error, setError] = useState('')
   const [showPassword, setShowPassword] = useState(false)
 
@@ -43,17 +42,6 @@ export const LoginScreen = () => {
         <SubTitle text="Entre com suas credenciais para acessar sua conta" />
         {error && <p className="text-red-500 text-center mb-4">{error}</p>}
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <select
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
-            className="border p-2 rounded-lg w-full"
-            required
-          >
-            <option value="">Selecione o tipo de usuário</option>
-            <option value="patient">Paciente</option>
-            <option value="doctor">Médico</option>
-            <option value="admin">Administrador</option>
-          </select>
           <input
             type="text"
             placeholder="Digite seu usuário"

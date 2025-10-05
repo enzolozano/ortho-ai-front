@@ -1,28 +1,52 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ToastSuccess, ToastError, ToastWarning } from '../../../components/Toast'
-import { ArrowLeft, Upload, X } from "lucide-react"
-import { encryptDocument, decryptDocument } from '../../../utils/cryptoHelper'
+import { Modal, Button } from 'react-bootstrap'
+import { ArrowLeft, Upload, X, Eye, EyeOff } from "lucide-react"
 import { GetUserById, PostUser, PutUser } from '../../../services/users'
-import { useAuth } from '../../../contexts/AuthContext'
+import { encryptDocument, decryptDocument } from '../../../utils/cryptoHelper'
+import { GetAuthByUserId, DeleteAuth, PostRegister } from '../../../services/authentication'
 
-export const PatientScreen = () => {
+export const DoctorScreen = () => {
   const [preview, setPreview] = useState(null)
-  const [patient, setPatient] = useState({
+  const [doctor, setDoctor] = useState({
     name: "",
     email: "",
+    document: "",
     phone: "",
     birthDate: "",
     registerDate: "",
     photo: null,
   })
   const { id } = useParams()
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [showAddAuth, setShowAddAuth] = useState(false)
+  const [showAuthMessage, setShowAuthMessage] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
   const navigate = useNavigate()
-  const { user } = useAuth()
 
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword)
+  }
+
+  const handleCloseAuthMessage = () => setShowAuthMessage(false)
+  const handleShowAuthMessage = () => setShowAuthMessage(true)
+
+  const handleCloseAddAuth = () => setShowAddAuth(false)
+  const handleShowAddAuth = async () => {
+    const response = await GetAuthByUserId(id)
+
+    if (response?.success) {
+      handleShowAuthMessage()
+    } else {
+      setShowAddAuth(true)
+    }
+  }
+  
   useEffect(() => {
-    async function searchPatient() {
-      const response = await GetUserById(id)  
+    async function searchDoctor() {
+      const response = await GetUserById(id)
 
       if (response.message) {
         return ToastError(response.message);
@@ -31,33 +55,33 @@ export const PatientScreen = () => {
       let documentPlain = ''
       if (response.document) {
         const encryptedObj = JSON.parse(response.document);
-        documentPlain = await decryptDocument(encryptedObj)
+        documentPlain = await decryptDocument(JSON.parse(encryptedObj))
       }
 
-      const patient = {
+      const doctor = {
         id: id,
         name: response.name,
         email: response.email,
-        phone: response.phone,
         document: documentPlain,
+        phone: response.phone,
         birthDate: response.birth_date,
         registerDate: response.created_at,
         photo: response.photo_url
       }
 
-      setPreview(patient.photo)
-      setPatient(patient)
+      setPreview(doctor.photo)
+      setDoctor(doctor)
     }
     
     if (id > 0) {
-      searchPatient()
+      searchDoctor()
     }
   }, [id])
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
-    setPatient({
-      ...patient,
+    setDoctor({
+      ...doctor,
       [name]: value
     })
   }
@@ -70,8 +94,8 @@ export const PatientScreen = () => {
       reader.onloadend = () => {
         const base64String = reader.result;
         
-        setPatient({
-          ...patient,
+        setDoctor({
+          ...doctor,
           photo: base64String
         });
 
@@ -82,8 +106,8 @@ export const PatientScreen = () => {
   };
 
   const clearFile = () => {
-    setPatient({
-      ...patient,
+    setDoctor({
+      ...doctor,
       photo: null
     })
     setPreview(null)
@@ -92,43 +116,59 @@ export const PatientScreen = () => {
   const handleSubmit = async (e) => {
     e.preventDefault()
 
-    if (!patient.photo) {
-      return ToastWarning('Foto do paciente é obrigatória')
+    if (!doctor.photo) {
+      return ToastWarning("Foto do médico é obrigatória")
     }
 
-    const encryptedDocument = patient.document ? await encryptDocument(patient.document) : ''
+    const encryptedDocument = doctor.document ? await encryptDocument(doctor.document) : ''
 
-    const newPatient = {
-      name: patient.name,
-      email: patient.email,
-      phone: patient.phone,
-      document: encryptedDocument,
-      responsible_doctor: user.id,
-      birth_date: patient.birthDate,
-      role: 0,
-      photo_url: patient.photo
+    const newDoctor = {
+      name: doctor.name,
+      email: doctor.email,
+      phone: doctor.phone,
+      document: JSON.stringify(encryptedDocument),
+      birth_date: doctor.birthDate,
+      role: 1,
+      photo_url: doctor.photo
     }
 
-    const response = id > 0 ? await PutUser(id, newPatient) : await PostUser(newPatient)
+    const response = id > 0 ? await PutUser(id, newDoctor) : await PostUser(newDoctor)
 
     if (!response.success) {
-        return ToastError(response.message)
-    } else {
+      return ToastError(response.message)
+    } 
+
+    ToastSuccess(response.message)
+    navigate('/doctors')
+  }
+
+  const handleRemoveAuth = async () => {
+    await DeleteAuth(id)
+    setShowAuthMessage(false)
+    setShowAddAuth(true)
+  }
+
+  const addAuth = async () => {
+    const response = await PostRegister(id, username, password)
+
+    if (response?.success) {
       ToastSuccess(response.message)
-      navigate('/patients')
+      handleCloseAddAuth()
+    } else {
+      ToastError(response?.message || 'Falha desconhecida ao registrar autenticação do médico')
     }
   }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <ArrowLeft className="h-5 w-5 text-gray-600 cursor-pointer" onClick={() => navigate('/patients')} />
-        <h1 className="text-2xl font-bold text-gray-800">Editar Paciente</h1>
+        <ArrowLeft className="h-5 w-5 text-gray-600 cursor-pointer" onClick={() => navigate('/doctors')} />
+        <h1 className="text-2xl font-bold text-gray-800">Editar Médico</h1>
       </div>
 
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          {/* Foto do paciente */}
+          {/* Foto do médico */}
           <div className="space-y-2">
             {preview ? (
               <div className="relative w-32 h-32 mx-auto">
@@ -161,7 +201,7 @@ export const PatientScreen = () => {
             )}
           </div>
 
-          {/* Informações do paciente */}
+          {/* Informações do médico */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <label htmlFor="name" className="block text-sm font-medium text-gray-700">
@@ -171,7 +211,7 @@ export const PatientScreen = () => {
                 type="text"
                 id="name"
                 name="name"
-                value={patient.name}
+                value={doctor.name}
                 onChange={handleInputChange}
                 className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 required
@@ -186,7 +226,7 @@ export const PatientScreen = () => {
                 type="email"
                 id="email"
                 name="email"
-                value={patient.email}
+                value={doctor.email}
                 onChange={handleInputChange}
                 className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 required
@@ -203,7 +243,7 @@ export const PatientScreen = () => {
                 type="phone"
                 id="phone"
                 name="phone"
-                value={patient.phone}
+                value={doctor.phone}
                 onChange={handleInputChange}
                 className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 required
@@ -217,7 +257,7 @@ export const PatientScreen = () => {
                 type="document"
                 id="document"
                 name="document"
-                value={patient.document}
+                value={doctor.document}
                 onChange={handleInputChange}
                 className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 required
@@ -234,13 +274,12 @@ export const PatientScreen = () => {
                 type="date"
                 id="birthDate"
                 name="birthDate"
-                value={patient.birthDate}
+                value={doctor.birthDate}
                 onChange={handleInputChange}
                 className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 required
               />
             </div>
-
             <div className="space-y-2">
               <label htmlFor="registerDate" className="block text-sm font-medium text-gray-700">
                 Data de Cadastro
@@ -249,7 +288,7 @@ export const PatientScreen = () => {
                 type="date"
                 id="registerDate"
                 name="registerDate"
-                value={patient.registerDate.split("T")[0]}
+                value={doctor.registerDate.split("T")[0]}
                 className="w-full px-4 py-2 border rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
                 disabled
               />
@@ -257,27 +296,103 @@ export const PatientScreen = () => {
             </div>
           </div>
 
-          <div className="pt-4 border-t flex justify-end space-x-3">
+          <br />
+
+          <div className="pt-4 border-t flex justify-between">
             <button
               type="button"
-              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
-              onClick={() => navigate('/patients')}
+              disabled={id <= 0}
+              className={`px-4 py-2 rounded-md
+                ${id <= 0
+                  ? "bg-gray-400 text-gray-200 cursor-not-allowed"
+                  : "bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                }`
+              }
+              onClick={() => handleShowAddAuth()}
             >
-              Cancelar
+              Adicionar autenticação
             </button>
-            <button
-              type="submit"
-              disabled={user.role != 1}
-              className={`px-4 py-2 rounded-md text-white transition-colors 
-                ${user.role != 1 
-                  ? "bg-gray-400 cursor-not-allowed" 
-                  : "bg-green-600 hover:bg-green-700"}`}
-            >
-              Salvar Alterações
-            </button>
+            <div className="flex space-x-3">
+              <button
+                type="button"
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+                onClick={() => navigate('/doctors')}
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+              >
+                Salvar Alterações
+              </button>
+            </div>
           </div>
         </form>
       </div>
+
+      <Modal centered show={showAuthMessage} onHide={handleCloseAuthMessage}>
+        <Modal.Header>
+          <Modal.Title>Atenção!</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p>
+            O médico em questão já possui um registro de autenticação. Tem certeza que deseja excluir o atual e criar uma nova autenticação?
+          </p>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="danger" onClick={handleCloseAuthMessage}>
+            Não
+          </Button>
+          <Button variant="success" onClick={handleRemoveAuth}>
+            Sim
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      <Modal centered show={showAddAuth} onHide={handleCloseAddAuth}>
+        <Modal.Header>
+          <Modal.Title>Adicionar autenticação do médico</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="flex flex-col gap-4">
+          <input
+            type="text"
+            placeholder="Digite seu usuário"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            className="border p-2 rounded-lg w-full"
+            required
+          />
+          <div className="relative">
+            <input
+              type={showPassword ? 'text' : 'password'}
+              placeholder="Digite sua senha"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="border p-2 rounded-lg w-full"
+              required
+            />
+            <button
+              type="button"
+              className="absolute right-0 top-0 h-full px-3 py-2 text-muted-foreground"
+              onClick={togglePasswordVisibility}
+              aria-label={showPassword ? 'Esconder senha' : 'Mostrar senha'}
+              tabIndex="-1"
+            >
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="danger" onClick={handleCloseAddAuth}>
+            Cancelar
+          </Button>
+          <Button variant="success" onClick={addAuth}>
+            Adicionar
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
     </div>
   )
 }

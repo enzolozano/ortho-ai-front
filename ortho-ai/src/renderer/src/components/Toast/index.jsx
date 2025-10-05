@@ -11,7 +11,7 @@ export const ToastSuccess = (text) => {
 }
 
 export const ToastWarning = (text) => {
-  toast.success(text, toastOptions)
+  toast.warning(text, toastOptions)
 }
 
 export const ToastError = (text) => {

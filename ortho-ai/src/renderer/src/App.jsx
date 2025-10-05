@@ -6,10 +6,9 @@ import { LoginScreen } from './pages/login'
 import { HomeScreen } from './pages/home'
 import { PatientsScreen } from './pages/patients'
 import { PatientScreen } from './pages/patients/editPatient'
+import { DoctorsScreen } from './pages/doctors'
+import { DoctorScreen } from './pages/doctors/editDoctor'
 import { SendImageScreen } from './pages/sendImage'
-import { HistoryScreen } from './pages/history'
-import { ReportsScreen } from './pages/reports'
-import { SettingScreen } from './pages/settings'
 import { ToastContainer } from 'react-toastify'
 
 export const App = () => {
@@ -24,9 +23,9 @@ export const App = () => {
             path="/home"
             element={
               <ProtectedRoute>
-                <Layout>
-                  <HomeScreen />
-                </Layout>
+                <LayoutWithNavigate>
+                  {(navigate) => <HomeScreen navigate={navigate} />}
+                </LayoutWithNavigate>
               </ProtectedRoute>
             }
           />
@@ -51,41 +50,31 @@ export const App = () => {
             }
           />
           <Route
+            path="/doctors"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <DoctorsScreen />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/doctor/:id"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <DoctorScreen />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/uploadfile"
             element={
               <ProtectedRoute>
                 <Layout>
                   <SendImageScreen />
-                </Layout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/history"
-            element={
-              <ProtectedRoute>
-                <Layout>
-                  <HistoryScreen />
-                </Layout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/reports"
-            element={
-              <ProtectedRoute>
-                <Layout>
-                  <ReportsScreen />
-                </Layout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/settings"
-            element={
-              <ProtectedRoute>
-                <Layout>
-                  <SettingScreen />
                 </Layout>
               </ProtectedRoute>
             }
@@ -105,6 +94,21 @@ const Layout = ({ children }) => {
     <div className="flex h-screen w-full bg-gray-50">
       <Sidebar navigate={navigate} logout={logout} />
       <div className="flex-1 p-5 overflow-y-auto">{children}</div>
+    </div>
+  )
+}
+
+// versão especial do layout que passa navigate como função render
+const LayoutWithNavigate = ({ children }) => {
+  const { logout } = useAuth()
+  const navigate = useNavigate()
+
+  return (
+    <div className="flex h-screen w-full bg-gray-50">
+      <Sidebar navigate={navigate} logout={logout} />
+      <div className="flex-1 p-5 overflow-y-auto">
+        {children(navigate)}
+      </div>
     </div>
   )
 }
