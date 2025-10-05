@@ -1,6 +1,6 @@
 export async function GetAuthByUserId(id) {
   try {
-    const response = await fetch(`http://127.0.0.1:8000/api/v1/auth/by_user/${id}`, {
+    const response = await fetch(`http://127.0.0.1:8010/api/v1/auth/by_user/${id}`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' }
     })
@@ -19,7 +19,7 @@ export async function GetAuthByUserId(id) {
 
 export async function DeleteAuth(id) {
   try {
-    const response = await fetch(`http://127.0.0.1:8000/api/v1/auth/${id}`, {
+    const response = await fetch(`http://127.0.0.1:8010/api/v1/auth/${id}`, {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' }
     })
@@ -38,7 +38,7 @@ export async function DeleteAuth(id) {
 
 export async function PostLogin(username, password) {
   try {
-    const response = await fetch('http://127.0.0.1:8000/api/v1/auth/login', {
+    const response = await fetch('http://127.0.0.1:8010/api/v1/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password })
@@ -58,7 +58,7 @@ export async function PostLogin(username, password) {
 
 export async function PostRegister(user_id, username, password) {
   try {
-    const response = await fetch('http://127.0.0.1:8000/api/v1/auth/register', {
+    const response = await fetch('http://127.0.0.1:8010/api/v1/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ user_id, username, password })

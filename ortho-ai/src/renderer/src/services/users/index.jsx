@@ -1,7 +1,7 @@
 export async function PostUser(user) {
     console.log(user)
     try {
-        const response = await fetch('http://127.0.0.1:8000/api/v1/users/', { 
+        const response = await fetch('http://127.0.0.1:8010/api/v1/users/', { 
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(user)
@@ -22,7 +22,7 @@ export async function PostUser(user) {
 
 export async function PutUser(id, user) {
     try {
-        const response = await fetch(`http://127.0.0.1:8000/api/v1/users/${id}`, { 
+        const response = await fetch(`http://127.0.0.1:8010/api/v1/users/${id}`, { 
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(user)
@@ -43,7 +43,7 @@ export async function PutUser(id, user) {
 
 export async function GetPatients() {
     try {
-        const response = await fetch('http://127.0.0.1:8000/api/v1/users/by_role/0', { 
+        const response = await fetch('http://127.0.0.1:8010/api/v1/users/by_role/0', { 
             method: 'GET',
             headers: { 'Content-Type': 'application/json' }
         })
@@ -63,7 +63,7 @@ export async function GetPatients() {
 
 export async function GetPatientsByDoctor(user_id) {
     try {
-        const response = await fetch(`http://127.0.0.1:8000/api/v1/users/patients/by_doctor/${user_id}`, { 
+        const response = await fetch(`http://127.0.0.1:8010/api/v1/users/patients/by_doctor/${user_id}`, { 
             method: 'GET',
             headers: { 'Content-Type': 'application/json' }
         })
@@ -83,7 +83,7 @@ export async function GetPatientsByDoctor(user_id) {
 
 export async function GetDoctors() {
     try {
-        const response = await fetch('http://127.0.0.1:8000/api/v1/users/by_role/1', { 
+        const response = await fetch('http://127.0.0.1:8010/api/v1/users/by_role/1', { 
             method: 'GET',
             headers: { 'Content-Type': 'application/json' }
         })
@@ -103,7 +103,7 @@ export async function GetDoctors() {
 
 export async function GetUserById(id) {
     try {
-        const response = await fetch(`http://127.0.0.1:8000/api/v1/users/${id}`, {
+        const response = await fetch(`http://127.0.0.1:8010/api/v1/users/${id}`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' }
         })
@@ -123,7 +123,7 @@ export async function GetUserById(id) {
 
 export async function RemoveUserById(id) {
     try {
-        const response = await fetch(`http://127.0.0.1:8000/api/v1/users/${id}`, {
+        const response = await fetch(`http://127.0.0.1:8010/api/v1/users/${id}`, {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' }
         })
