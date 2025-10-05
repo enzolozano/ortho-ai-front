@@ -1,6 +1,5 @@
 import { FaHome, FaUsers, FaFileUpload } from 'react-icons/fa'
 import { FaUserDoctor } from "react-icons/fa6";
-import { FiFileText } from 'react-icons/fi'
 import { useAuth } from '../../contexts/AuthContext'
 import logo from '../../assets/logo.png'
 
@@ -11,7 +10,6 @@ export const Sidebar = ({ navigate, logout }) => {
     { id: 'home', title: 'Tela Inicial', icon: <FaHome /> },
     { id: 'patients', title: 'Pacientes', icon: <FaUsers /> },
     { id: 'uploadfile', title: 'Enviar Imagem', icon: <FaFileUpload /> },
-    { id: 'reports', title: 'Relatórios', icon: <FiFileText /> },
   ]
 
   if (user?.role === 2) {
@@ -21,6 +19,11 @@ export const Sidebar = ({ navigate, logout }) => {
       title: 'Médicos',
       icon: <FaUserDoctor />
     })
+
+    const uploadFileIndex = menuItems.findIndex(item => item.id === 'uploadfile')
+    if (uploadFileIndex !== -1) {
+      menuItems.splice(uploadFileIndex, 1)
+    }
   }
 
   const handleLogout = () => {

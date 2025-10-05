@@ -9,7 +9,6 @@ import { PatientScreen } from './pages/patients/editPatient'
 import { DoctorsScreen } from './pages/doctors'
 import { DoctorScreen } from './pages/doctors/editDoctor'
 import { SendImageScreen } from './pages/sendImage'
-import { ReportsScreen } from './pages/reports'
 import { ToastContainer } from 'react-toastify'
 
 export const App = () => {
@@ -76,16 +75,6 @@ export const App = () => {
               <ProtectedRoute>
                 <Layout>
                   <SendImageScreen />
-                </Layout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/reports"
-            element={
-              <ProtectedRoute>
-                <Layout>
-                  <ReportsScreen />
                 </Layout>
               </ProtectedRoute>
             }

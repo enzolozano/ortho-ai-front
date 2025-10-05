@@ -9,7 +9,6 @@ export const HomeScreen = ({ navigate }) => {
   const menuItems = [
     { id: 'patients', title: 'Pacientes', icon: <FaUsers /> },
     { id: 'uploadfile', title: 'Enviar Imagem', icon: <FaFileUpload /> },
-    { id: 'reports', title: 'Relatórios', icon: <FiFileText /> },
   ]
 
   if (user?.role === 2) {
@@ -19,6 +18,11 @@ export const HomeScreen = ({ navigate }) => {
       title: 'Médicos',
       icon: <FaUserDoctor />
     })
+
+    const uploadFileIndex = menuItems.findIndex(item => item.id === 'uploadfile')
+    if (uploadFileIndex !== -1) {
+      menuItems.splice(uploadFileIndex, 1)
+    }
   }
 
   return (
