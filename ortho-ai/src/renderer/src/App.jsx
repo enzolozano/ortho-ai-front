@@ -24,9 +24,9 @@ export const App = () => {
             path="/home"
             element={
               <ProtectedRoute>
-                <Layout>
-                  <HomeScreen />
-                </Layout>
+                <LayoutWithNavigate>
+                  {(navigate) => <HomeScreen navigate={navigate} />}
+                </LayoutWithNavigate>
               </ProtectedRoute>
             }
           />
@@ -105,6 +105,21 @@ const Layout = ({ children }) => {
     <div className="flex h-screen w-full bg-gray-50">
       <Sidebar navigate={navigate} logout={logout} />
       <div className="flex-1 p-5 overflow-y-auto">{children}</div>
+    </div>
+  )
+}
+
+// versão especial do layout que passa navigate como função render
+const LayoutWithNavigate = ({ children }) => {
+  const { logout } = useAuth()
+  const navigate = useNavigate()
+
+  return (
+    <div className="flex h-screen w-full bg-gray-50">
+      <Sidebar navigate={navigate} logout={logout} />
+      <div className="flex-1 p-5 overflow-y-auto">
+        {children(navigate)}
+      </div>
     </div>
   )
 }

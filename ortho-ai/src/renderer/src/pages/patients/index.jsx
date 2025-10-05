@@ -4,7 +4,7 @@ import { SubTitle } from '../../components/SubTitle'
 import { useNavigate } from 'react-router-dom'
 import { Modal, Button } from 'react-bootstrap'
 import { ToastError, ToastSuccess } from '../../components/Toast'
-import { GetPatients, RemoveUserById } from '../../services/users'
+import { GetPatients, GetPatientsByDoctor, RemoveUserById } from '../../services/users'
 import { useAuth } from '../../contexts/AuthContext'
 
 export const PatientsScreen = () => {
@@ -29,7 +29,7 @@ export const PatientsScreen = () => {
   useEffect(() => {
     async function fetchPatients() {
       try {
-        const response = await GetPatients()
+        const response = user.role != 2 ? await GetPatientsByDoctor(user.id) : await GetPatients()
 
         if (response.message) {
           return ToastError(response.message)
@@ -144,7 +144,7 @@ export const PatientsScreen = () => {
                     className={`bg-blue-500 text-white text-xs font-medium py-1.5 px-3 rounded-lg`}
                     onClick={() => navigate(`/patient/${patient.id}`)}
                   >
-                    Editar
+                    {user.role === 1 ? 'Editar' : 'Visualizar'}
                   </button>
                   {user?.role === 1 && (
                     <button

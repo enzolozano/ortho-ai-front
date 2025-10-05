@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ToastSuccess, ToastError } from '../../../components/Toast'
+import { ToastSuccess, ToastError, ToastWarning } from '../../../components/Toast'
 import { ArrowLeft, Upload, X } from "lucide-react"
+import { encryptDocument, decryptDocument } from '../../../utils/cryptoHelper'
 import { GetUserById, PostUser, PutUser } from '../../../services/users'
+import { useAuth } from '../../../contexts/AuthContext'
 
 export const PatientScreen = () => {
   const [preview, setPreview] = useState(null)
@@ -16,7 +18,8 @@ export const PatientScreen = () => {
   })
   const { id } = useParams()
   const navigate = useNavigate()
-  
+  const { user } = useAuth()
+
   useEffect(() => {
     async function searchPatient() {
       const response = await GetUserById(id)  
@@ -25,11 +28,18 @@ export const PatientScreen = () => {
         return ToastError(response.message);
       }
 
+      let documentPlain = ''
+      if (response.document) {
+        const encryptedObj = JSON.parse(response.document);
+        documentPlain = await decryptDocument(encryptedObj)
+      }
+
       const patient = {
         id: id,
         name: response.name,
         email: response.email,
         phone: response.phone,
+        document: documentPlain,
         birthDate: response.birth_date,
         registerDate: response.created_at,
         photo: response.photo_url
@@ -82,21 +92,24 @@ export const PatientScreen = () => {
   const handleSubmit = async (e) => {
     e.preventDefault()
 
+    if (!patient.photo) {
+      return ToastWarning('Foto do paciente é obrigatória')
+    }
+
+    const encryptedDocument = patient.document ? await encryptDocument(patient.document) : ''
+
     const newPatient = {
       name: patient.name,
       email: patient.email,
       phone: patient.phone,
+      document: encryptedDocument,
+      responsible_doctor: user.id,
       birth_date: patient.birthDate,
       role: 0,
       photo_url: patient.photo
     }
 
-    console.log(patient)
-    console.log(newPatient)
-
     const response = id > 0 ? await PutUser(id, newPatient) : await PostUser(newPatient)
-
-    console.log(response)
 
     if (!response.success) {
         return ToastError(response.message)
@@ -181,7 +194,7 @@ export const PatientScreen = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
                 Telefone
@@ -196,7 +209,23 @@ export const PatientScreen = () => {
                 required
               />
             </div>
+            <div className="space-y-2">
+              <label htmlFor="document" className="block text-sm font-medium text-gray-700">
+                Documento
+              </label>
+              <input
+                type="document"
+                id="document"
+                name="document"
+                value={patient.document}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                required
+              />
+            </div>
+          </div>
 
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <label htmlFor="birthDate" className="block text-sm font-medium text-gray-700">
                 Data de Nascimento
@@ -238,7 +267,11 @@ export const PatientScreen = () => {
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+              disabled={user.role != 1}
+              className={`px-4 py-2 rounded-md text-white transition-colors 
+                ${user.role != 1 
+                  ? "bg-gray-400 cursor-not-allowed" 
+                  : "bg-green-600 hover:bg-green-700"}`}
             >
               Salvar Alterações
             </button>

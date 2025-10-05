@@ -61,6 +61,26 @@ export async function GetPatients() {
     }
 }
 
+export async function GetPatientsByDoctor(user_id) {
+    try {
+        const response = await fetch(`http://127.0.0.1:8000/api/v1/users/patients/by_doctor/${user_id}`, { 
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+        })
+        
+        const data = await response.json()
+
+        if (response.ok) {
+            return { patients: data }
+        } else {
+            return { message: data.detail || 'Erro desconhecido ao pesquisar pacientes' }
+        }
+    } catch (err) {
+        console.error(err)
+        return { message: 'Erro de requisição ao pesquisar pacientes' }
+    }
+}
+
 export async function GetDoctors() {
     try {
         const response = await fetch('http://127.0.0.1:8000/api/v1/users/by_role/1', { 
