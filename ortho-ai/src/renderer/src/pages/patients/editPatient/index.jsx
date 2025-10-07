@@ -102,7 +102,7 @@ export const PatientScreen = () => {
       name: patient.name,
       email: patient.email,
       phone: patient.phone,
-      document: encryptedDocument,
+      document: JSON.stringify(encryptedDocument),
       responsible_doctor: user.id,
       birth_date: patient.birthDate,
       role: 0,
