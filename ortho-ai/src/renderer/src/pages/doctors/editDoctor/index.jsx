@@ -55,7 +55,7 @@ export const DoctorScreen = () => {
       let documentPlain = ''
       if (response.document) {
         const encryptedObj = JSON.parse(response.document);
-        documentPlain = await decryptDocument(JSON.parse(encryptedObj))
+        documentPlain = await decryptDocument(encryptedObj)
       }
 
       const doctor = {
