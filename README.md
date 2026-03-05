@@ -72,4 +72,4 @@ O objeto é fornecer uma solução prática para clínicas e hospitais, unindo *
 ## 🔒 Segurança
 
 - Criptografia de dados sensíveis
-- Confirmidade com **LGPD** (Brasil)
+- Conformidade com **LGPD** (Brasil)
